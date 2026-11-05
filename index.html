@@ -14,6 +14,19 @@
   .tokens:empty{display:none}
 }
 .tile strong{overflow-wrap:normal;word-break:normal;hyphens:manual}
+
+.dice{display:flex;gap:12px;min-height:54px;padding:4px 0;perspective:300px}
+.die{width:44px;height:44px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:6px;border:1px solid #d4cbb5;border-radius:10px;background:linear-gradient(135deg,#fffef9,#e9dfc3);box-shadow:0 4px 0 #baa984,0 6px 8px #193b3444}
+.die i{width:6px;height:6px;border-radius:50%;background:#214b3f;box-shadow:inset 0 1px 2px #0007}
+.dice.rolling .die{animation:tumble .24s linear infinite alternate}
+.dice.rolling .die+ .die{animation-direction:alternate-reverse}
+@keyframes tumble{from{transform:translateY(1px) rotateZ(-24deg) rotateX(30deg)}to{transform:translateY(-11px) rotateZ(22deg) rotateY(-37deg)}}
+.certificate{margin-top:14px;padding:18px 10px;text-align:center;border:4px double #95702d;background:#fff5d8;color:#214b3f}
+.certificate img{width:54px;height:54px}
+.certificate h3{font:700 clamp(16px,3vw,24px) Georgia;overflow-wrap:anywhere}
+.certificate strong{display:block;font:700 21px Georgia;margin:9px 0;overflow-wrap:anywhere}
+@media(prefers-reduced-motion:reduce){.dice.rolling .die{animation:none}}
+@media print{header,footer,.board,aside> :not(#panel),#panel> :not(.certificate){display:none!important}main{display:block}#panel{border:0}.certificate{margin:12mm auto;padding:20mm 10mm;max-width:170mm}}
 </style>
 <header><div style="display:flex;align-items:center;gap:8px"><img src="./icon.svg" width="30" height="30" alt="">WINZNAU · SO</div><div>4652</div></header>
 <main><section class="board" id="board" aria-label="Spielfeld"><div class="center"><svg viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><circle cx="315" cy="83" r="39" fill="#d1a956"/><path fill="#35695b" d="M0 212L90 100l52 56 89-69 169 127v186H0Z"/><path fill="#3e7867" d="M0 276l110-87 65 55 117-73 108 57v172H0Z"/><path fill="#79aaa0" d="M0 343q95-59 205-19t195-4v80H0Z"/><path fill="none" stroke="#b1cec1" stroke-width="3" d="M0 366q95-59 205-19t195-4"/></svg><div class="brand"><span>DIE DORF-EDITION</span><h1>Winznau<br>Monopoly</h1><p>Zwischen Jura und Aare</p></div></div></section>
@@ -56,7 +69,10 @@ const $=id=>document.getElementById(id);
 const actionLabel=n=>n<0?'Kosten':'Gutschrift';
 const cash=n=>'CHF '+n.toLocaleString('de-CH');
 const key='winznau-monopoly-v1';
-const dice=['⚀','⚁','⚂','⚃','⚄','⚅'];
+const pips=[[5],[1,9],[1,5,9],[1,3,7,9],[1,3,5,7,9],[1,3,4,6,7,9]];
+const diceFaces=values=>values.map(value=>'<span class="die" aria-hidden="true">'+pips[value-1].map(pip=>'<i style="grid-area:'+Math.ceil(pip/3)+'/'+((pip-1)%3+1)+'"></i>').join('')+'</span>').join('');
+const certificate=leaders=>'<section class="certificate"><img src="./icon.svg" alt=""><p class="label">Winznau · Dorf-Edition</p><h3>Ehrenbürgerurkunde</h3><p>Verliehen an</p><strong>'+leaders.map(p=>esc(p.name)).join(' &amp; ')+'</strong><p>Für den Sieg im Winznau-Monopoly mit '+cash(wealth(leaders[0]))+' Spielvermögen.</p><small>Spielauszeichnung · '+new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich'}).format(new Date(game.finishedAt??Date.now()))+'</small></section>';
+let rolling=false;
 const cards=[['Du hilfst am Dorfmarkt. Die Bank zahlt dir CHF 100.',100],['Du spendierst deinem Verein neue Bälle. Zahle CHF 65.',-65],['Dein Stand am Dorffest bringt CHF 75 ein.',75],['Du beteiligst dich am Unterhalt des Kulturwegs. Zahle CHF 50.',-50],['Dein Team gewinnt das Dorfturnier. Du erhältst CHF 120.',120],['Die Bank erstattet dir CHF 40 für den Vereinsanlass.',40]];
 let game=null;
 try{game=JSON.parse(localStorage.getItem(key));if(game&&!game.reorderedProperties){const [gubler,bank,chaerne]=[game.lots[3],game.lots[22],game.lots[23]];game.lots[3]=chaerne;game.lots[22]=gubler;game.lots[23]=bank;const moved={3:22,22:23,23:3};for(const p of game.people)p.pos=moved[p.pos]??p.pos;game.reorderedProperties=true}if(game&&!game.distributedActions){const moved={17:19,19:20,20:21,21:17};const lots=game.lots.slice();for(const [from,to] of Object.entries(moved))game.lots[to]=lots[from];for(const p of game.people)p.pos=moved[p.pos]??p.pos;game.distributedActions=true}}catch{}
@@ -81,6 +97,7 @@ function draw(){
  });
  detail();$('players').hidden=$('history').hidden=!game;
  if(!game){setup();return}
+ if(game.phase==='win'&&!game.finishedAt)game.finishedAt=Date.now();
  try{localStorage.setItem(key,JSON.stringify(game))}catch{}
  const p=current(),i=p.pos,price=fields[i][2],lot=game.lots[i];
  const live=game.people.filter(p=>!p.out);
@@ -88,11 +105,11 @@ function draw(){
  let buttons=game.phase==='roll'?'<button class="action" id="roll">'+(p.jail?'Zug aussetzen':'Würfeln')+'</button>':'';
  if(game.phase==='buy')buttons+='<button class="action" id="buy" '+(p.money<price?'disabled':'')+'>Kaufen · '+cash(price)+'</button>';
  if(['buy','end'].includes(game.phase))buttons+=(canBuild(i)?'<button class="action" id="build">Haus bauen · '+cash(house(i))+'</button>':'')+'<button class="action alt" id="next">Zug beenden</button>';
- if(game.phase==='win')buttons='<button class="action" id="reset">Neue Partie</button>';
- $('panel').innerHTML='<p class="label">'+(game.phase==='win'?'Endstand':'Runde '+game.round+' / '+game.limit)+'</p><h2>'+ (game.phase==='win'?leaders.map(p=>esc(p.name)).join(' &amp; ')+(leaders.length>1?' gewinnen!':' gewinnt!'):dot(p)+' '+esc(p.name)+' ist am Zug')+'</h2><div class="dice" aria-label="'+(game.dice?.join(' und ')??'Würfel')+'">'+(game.dice?.map(n=>dice[n-1]).join(' ')??'⚄ ⚂')+'</div><p aria-live="polite">'+esc(game.message)+'</p><div class="controls">'+buttons+'</div>'+(game.phase==='win'?'':'<p style="margin:10px 0 0"><button class="action alt" id="reset">Neu starten</button></p>');
+ if(game.phase==='win')buttons='<button class="action" id="print">Urkunde drucken</button><button class="action alt" id="reset">Neue Partie</button>';
+ $('panel').innerHTML='<p class="label">'+(game.phase==='win'?'Endstand':'Runde '+game.round+' / '+game.limit)+'</p><h2>'+ (game.phase==='win'?leaders.map(p=>esc(p.name)).join(' &amp; ')+(leaders.length>1?' gewinnen!':' gewinnt!'):dot(p)+' '+esc(p.name)+' ist am Zug')+'</h2><div class="dice" aria-label="'+(game.dice?.join(' und ')??'Würfel')+'">'+diceFaces(game.dice??[5,3])+'</div><p aria-live="polite">'+esc(game.message)+'</p><div class="controls">'+buttons+'</div>'+(game.phase==='win'?certificate(leaders):'<p style="margin:10px 0 0"><button class="action alt" id="reset">Neu starten</button></p>');
  $('players').innerHTML='<p class="label">Spielende</p>'+game.people.map(p=>'<div class="player"><div>'+dot(p)+' <strong>'+esc(p.name)+'</strong><small>'+(p.out?'Ausgeschieden':game.lots.filter(l=>l?.owner===p.id).length+' Grundstücke · '+esc(fields[p.pos][0]))+'</small></div><b>'+cash(game.phase==='win'?wealth(p):p.money)+'</b></div>').join('');
  $('history').innerHTML='<p class="label">Spielverlauf</p><ol class="log">'+game.log.slice(0,6).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>';
- for(const [id,fn] of Object.entries({roll,buy,build,next,reset}))if($(id))$(id).onclick=fn;
+ for(const [id,fn] of Object.entries({roll:animateRoll,buy,build,next,reset,print:()=>window.print()}))if($(id))$(id).onclick=fn;
 }
 function detail(){
  const i=selected??game?.people[game.turn].pos;
@@ -116,12 +133,23 @@ function charge(amount,owner){
  if(game.people.filter(p=>!p.out).length===1)game.phase='win';
  return ' '+p.name+' scheidet aus.';
 }
-function roll(){
+function animateRoll(){
+ if(rolling||game.phase!=='roll')return;
+ if(current().jail){roll();return}
+ const result=[rollDie(),rollDie()];
+ if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){roll(result);return}
+ rolling=true;$('roll').disabled=true;$('reset').disabled=true;
+ const tray=$('panel').querySelector('.dice');
+ tray.classList.add('rolling');tray.setAttribute('aria-label','Würfel rollen');
+ const animation=setInterval(()=>{tray.innerHTML=diceFaces([rollDie(),rollDie()])},85);
+ setTimeout(()=>{clearInterval(animation);rolling=false;roll(result)},720);
+}
+function roll(result){
  const p=current();
  game.phase='end';
  if(p.jail){p.jail=false;game.message=p.name+' setzt im Arrest aus.'}
  else{
-  game.dice=[rollDie(),rollDie()];
+  game.dice=result;
   const target=p.pos+game.dice[0]+game.dice[1],bonus=target>=24;
   p.pos=target%24;
   if(bonus)p.money+=200;
