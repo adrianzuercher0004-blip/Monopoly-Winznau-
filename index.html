@@ -13,6 +13,7 @@
   .tokens{min-height:0}
   .tokens:empty{display:none}
 }
+.tile strong{overflow-wrap:normal;word-break:normal;hyphens:manual}
 </style>
 <header><div style="display:flex;align-items:center;gap:8px"><img src="./icon.svg" width="30" height="30" alt="">WINZNAU · SO</div><div>4652</div></header>
 <main><section class="board" id="board" aria-label="Spielfeld"><div class="center"><svg viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><circle cx="315" cy="83" r="39" fill="#d1a956"/><path fill="#35695b" d="M0 212L90 100l52 56 89-69 169 127v186H0Z"/><path fill="#3e7867" d="M0 276l110-87 65 55 117-73 108 57v172H0Z"/><path fill="#79aaa0" d="M0 343q95-59 205-19t195-4v80H0Z"/><path fill="none" stroke="#b1cec1" stroke-width="3" d="M0 366q95-59 205-19t195-4"/></svg><div class="brand"><span>DIE DORF-EDITION</span><h1>Winznau<br>Monopoly</h1><p>Zwischen Jura und Aare</p></div></div></section>
@@ -45,6 +46,7 @@ const fields=[
  ['Sportweg','road',260,4],['Fussballplatz','ball',280,4],['Einwohnergemeinde','coin'],['Kirchweg','church',300,5],['Waldenergie','forest'],['Ab in den Arrest','arrow'],
  ['Altes Schulhaus','house',320,5],['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['gubler.ch','web',420,7],['Raiffeisenbank','bank',460,7]
 ];
+const tileLabels={"Bachmätteliweg":"Bach­mät­teli­weg","Bürgergemeinde":"Bür­ger­ge­mein­de","Chäslochhöhle":"Chäs­loch­höh­le","Dorfzentrum Chärne":"Dorf­zen­trum Chärne","Einwohnergemeinde":"Ein­woh­ner­ge­mein­de","Fussballplatz":"Fuss­ball­platz","Kirchweg":"Kirch­weg","Kulturweg":"Kul­tur­weg","Lostorferstrasse":"Los­tor­fer­stras­se","Oberdorfstrasse":"Ober­dorf­stras­se","Raiffeisenbank":"Raif­fei­sen­bank","Altes Schulhaus":"Altes Schul­haus","Sportweg":"Sport­weg","Waldenergie":"Wald­ener­gie","Weihermätteli":"Wei­her­mät­teli","Stauwehr":"Stau­wehr","Aareweg":"Aare­weg","Ereignis":"Er­eig­nis"};
 const websites={22:'https://gubler.ch/',23:'https://www.raiffeisen.ch/mittelgoesgen-staffelegg/de/ueber-uns/ihre-bank-vor-ort.html'};
 const localActions={2:['Du kaufst Material für den Garten bei LANDI. Zahle CHF 40.',-40],17:['Du lieferst Holz für die Waldenergie. Du erhältst CHF 70.',70]};
 const fees={12:{name:'Wassergebühr',amount:60},15:{name:'Nachsteuern',amount:100}};
@@ -74,7 +76,7 @@ function draw(){
   const [row,col]=position(i),b=document.createElement('button'),lot=game?.lots[i];
   b.type='button';b.className='tile'+(game&&current().pos===i?' active':'');
   b.style.cssText='grid-area:'+row+'/'+col+';--c:'+(price?palette[group]:'#3a6354');
-  b.innerHTML=svg(icon)+'<strong>'+(i===12?'Bürger<wbr>gemeinde':name)+'</strong><small>'+(price?(lot?'◆ '+esc(game.people[lot.owner].name)+(lot.houses?' · '+lot.houses+'⌂':''):cash(price)):i===0?'+200':fees[i]?'−'+fees[i].amount:localActions[i]?actionLabel(localActions[i][1])+' '+Math.abs(localActions[i][1]):i===9?'± CHF':'')+'</small><span class="tokens">'+(game?.people.filter(p=>!p.out&&p.pos===i).map(dot).join('')??'')+'</span>';
+  b.innerHTML=svg(icon)+'<strong>'+(tileLabels[name]??name)+'</strong><small>'+(price?(lot?'◆ '+esc(game.people[lot.owner].name)+(lot.houses?' · '+lot.houses+'⌂':''):cash(price)):i===0?'+200':fees[i]?'−'+fees[i].amount:localActions[i]?actionLabel(localActions[i][1])+' '+Math.abs(localActions[i][1]):i===9?'± CHF':'')+'</small><span class="tokens">'+(game?.people.filter(p=>!p.out&&p.pos===i).map(dot).join('')??'')+'</span>';
   b.onclick=()=>{selected=i;detail()};$('board').append(b);
  });
  detail();$('players').hidden=$('history').hidden=!game;
