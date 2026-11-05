@@ -15,17 +15,17 @@
 }
 .tile strong{overflow-wrap:normal;word-break:normal;hyphens:manual}
 
-.dice{display:flex;gap:12px;min-height:54px;padding:4px 0;perspective:300px}
-.die{width:44px;height:44px;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:6px;border:1px solid #d4cbb5;border-radius:10px;background:linear-gradient(135deg,#fffef9,#e9dfc3);box-shadow:0 4px 0 #baa984,0 6px 8px #193b3444}
-.die i{width:6px;height:6px;border-radius:50%;background:#214b3f;box-shadow:inset 0 1px 2px #0007}
-.dice.rolling .die{animation:tumble .24s linear infinite alternate}
-.dice.rolling .die+ .die{animation-direction:alternate-reverse}
-@keyframes tumble{from{transform:translateY(1px) rotateZ(-24deg) rotateX(30deg)}to{transform:translateY(-11px) rotateZ(22deg) rotateY(-37deg)}}
+.dice{display:flex;align-items:center;justify-content:center;gap:28px;min-height:96px;padding:12px 10px;margin-bottom:12px;border-radius:12px;background:radial-gradient(ellipse at 50% 25%,#538170,#264d42);box-shadow:inset 0 2px 7px #142e27aa}
+.die-stage{position:relative;width:46px;height:46px;perspective:290px}
+.die-stage:before{content:"";position:absolute;inset:auto -3px -8px;height:11px;border-radius:50%;background:#122e24;filter:blur(4px);opacity:.65}
+.die{position:relative;width:46px;height:46px;transform-style:preserve-3d}
+.face{position:absolute;inset:0;display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);place-items:center;padding:7px;border:1px solid #b9a77e;border-radius:7px;background:linear-gradient(145deg,#fffef7,#eadbb6);box-shadow:inset 0 0 5px #b49d6f80;backface-visibility:hidden}
+.face i{width:6px;height:6px;border-radius:50%;background:#23362d;box-shadow:inset 0 1px 2px #0008,0 1px #fff8}
+.face:nth-child(2n){background:linear-gradient(145deg,#f9edcf,#d9c498)}
 .certificate{margin-top:14px;padding:18px 10px;text-align:center;border:4px double #95702d;background:#fff5d8;color:#214b3f}
 .certificate img{width:54px;height:54px}
 .certificate h3{font:700 clamp(16px,3vw,24px) Georgia;overflow-wrap:anywhere}
 .certificate strong{display:block;font:700 21px Georgia;margin:9px 0;overflow-wrap:anywhere}
-@media(prefers-reduced-motion:reduce){.dice.rolling .die{animation:none}}
 @media print{header,footer,.board,aside> :not(#panel),#panel> :not(.certificate){display:none!important}main{display:block}#panel{border:0}.certificate{margin:12mm auto;padding:20mm 10mm;max-width:170mm}}
 </style>
 <header><div style="display:flex;align-items:center;gap:8px"><img src="./icon.svg" width="30" height="30" alt="">WINZNAU · SO</div><div>4652</div></header>
@@ -70,7 +70,11 @@ const actionLabel=n=>n<0?'Kosten':'Gutschrift';
 const cash=n=>'CHF '+n.toLocaleString('de-CH');
 const key='winznau-monopoly-v1';
 const pips=[[5],[1,9],[1,5,9],[1,3,7,9],[1,3,5,7,9],[1,3,4,6,7,9]];
-const diceFaces=values=>values.map(value=>'<span class="die" aria-hidden="true">'+pips[value-1].map(pip=>'<i style="grid-area:'+Math.ceil(pip/3)+'/'+((pip-1)%3+1)+'"></i>').join('')+'</span>').join('');
+const sides=['rotateY(0deg)','rotateX(90deg)','rotateY(90deg)','rotateY(-90deg)','rotateX(-90deg)','rotateY(180deg)'];
+const resting=[[0,0],[-90,0],[0,-90],[0,90],[90,0],[0,180]];
+const pose=(value,tilt=true)=>{const [x,y]=resting[value-1];return (tilt?'rotateX(-13deg) rotateY(16deg) ':'')+'rotateX('+x+'deg) rotateY('+y+'deg)'};
+const cubeFaces=sides.map((side,index)=>'<span class="face" style="transform:'+side+' translateZ(23px)">'+pips[index].map(pip=>'<i style="grid-area:'+Math.ceil(pip/3)+'/'+((pip-1)%3+1)+'"></i>').join('')+'</span>').join('');
+const diceFaces=values=>values.map(value=>'<span class="die-stage" aria-hidden="true"><span class="die" style="display:block;transform:'+pose(value)+'">'+cubeFaces+'</span></span>').join('');
 const certificate=leaders=>'<section class="certificate"><img src="./icon.svg" alt=""><p class="label">Winznau · Dorf-Edition</p><h3>Ehrenbürgerurkunde</h3><p>Verliehen an</p><strong>'+leaders.map(p=>esc(p.name)).join(' &amp; ')+'</strong><p>Für den Sieg im Winznau-Monopoly mit '+cash(wealth(leaders[0]))+' Spielvermögen.</p><small>Spielauszeichnung · '+new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich'}).format(new Date(game.finishedAt??Date.now()))+'</small></section>';
 let rolling=false;
 const cards=[['Du hilfst am Dorfmarkt. Die Bank zahlt dir CHF 100.',100],['Du spendierst deinem Verein neue Bälle. Zahle CHF 65.',-65],['Dein Stand am Dorffest bringt CHF 75 ein.',75],['Du beteiligst dich am Unterhalt des Kulturwegs. Zahle CHF 50.',-50],['Dein Team gewinnt das Dorfturnier. Du erhältst CHF 120.',120],['Die Bank erstattet dir CHF 40 für den Vereinsanlass.',40]];
@@ -140,9 +144,19 @@ function animateRoll(){
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){roll(result);return}
  rolling=true;$('roll').disabled=true;$('reset').disabled=true;
  const tray=$('panel').querySelector('.dice');
- tray.classList.add('rolling');tray.setAttribute('aria-label','Würfel rollen');
- const animation=setInterval(()=>{tray.innerHTML=diceFaces([rollDie(),rollDie()])},85);
- setTimeout(()=>{clearInterval(animation);rolling=false;roll(result)},720);
+ tray.setAttribute('aria-label','Würfel rollen');
+ const animations=Array.from(tray.querySelectorAll('.die'),(die,i)=>{
+  const sign=i===0?1:-1;
+  const [x,y]=resting[result[i]-1];
+  return die.animate([
+   {transform:die.style.transform,offset:0},
+   {transform:'translate3d('+(-sign*14)+'px,-22px,0) rotateX(155deg) rotateY('+(sign*145)+'deg)',offset:.26},
+   {transform:'translate3d('+(sign*9)+'px,1px,0) rotateX(345deg) rotateY('+(sign*315)+'deg)',offset:.57},
+   {transform:'translate3d('+(sign*4)+'px,-8px,0) rotateX(490deg) rotateY('+(sign*460)+'deg)',offset:.76},
+   {transform:'rotateX(-13deg) rotateY(16deg) rotateX('+(720+x)+'deg) rotateY('+(sign*720+y)+'deg)',offset:1}
+  ],{duration:830+i*90,easing:'ease-out',fill:'forwards'});
+ });
+ Promise.allSettled(animations.map(animation=>animation.finished)).then(()=>{rolling=false;roll(result)});
 }
 function roll(result){
  const p=current();
