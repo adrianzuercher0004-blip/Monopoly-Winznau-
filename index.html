@@ -20,6 +20,8 @@
 <footer>Inspiriert vom <a href="https://www.winznau.ch/_docn/2510536/Ortsplan2016.pdf">Winznauer Ortsplan</a> und vom <a href="https://oltentourismus.ch/de/entdecken_erleben/natur/themenwege/kulturweg-winznau">Kulturweg</a>. Preise und Ereignisse sind Spielwerte.</footer>
 <script>
 const icons={
+ bank:'M2 8 12 3l10 5H2zm2 12h16M2 22h20M6 10v8m6-8v8m6-8v8',
+ web:'M3 4h18v13H3zm5 18h8m-4-5v5M7 9l-2 2 2 2m10-4 2 2-2 2m-3-5-4 6',
  flag:'M5 21V3m0 1c6-5 9 5 15 0v10c-6 5-9-5-15 0',
  road:'M7 22 10 2m7 20L14 2m-2 19v-3m0-3v-3m0-3V6',
  house:'M2 11 12 3l10 8M5 10v11h14V10m-9 11v-6h4v6',
@@ -37,11 +39,12 @@ const icons={
 };
 const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';
 const fields=[
- ['LOS','flag'],['Bachmätteliweg','road',80,0],['Dorfpost','cards'],['Brunnackerstrasse','road',100,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
+ ['LOS','flag'],['Bachmätteliweg','road',80,0],['Dorfpost','cards'],['gubler.ch','web',100,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
  ['Rankwog-Brücke','bridge',180,2],['Kulturweg','leaf',200,2],['Ereignis','cards'],['Chäslochhöhle','hill',220,3],['Weihermätteli','leaf',240,3],['Freie Pause','bench'],
  ['Sportweg','road',260,4],['Fussballplatz','ball',280,4],['Gemeindeabgabe','coin'],['Kirchweg','church',300,5],['Altes Schulhaus','house',320,5],['Ab in den Arrest','arrow'],
- ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Dorfpost','cards'],['Oltnerstrasse','road',380,7],['Dorfzentrum Chärne','house',400,7]
+ ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Dorfpost','cards'],['Raiffeisenbank','bank',380,7],['Dorfzentrum Chärne','house',400,7]
 ];
+const websites={3:'https://gubler.ch/',22:'https://www.raiffeisen.ch/mittelgoesgen-staffelegg/de/ueber-uns/ihre-bank-vor-ort.html'};
 const palette=['#9a5742','#288179','#336ab4','#6b52a0','#ad521f','#ae3e63','#527727','#886716'];
 const colors=['#007e93','#c33f53','#956b00','#784ec6'];
 const $=id=>document.getElementById(id);
@@ -90,7 +93,7 @@ function detail(){
  if(i==null){$('field').innerHTML='<p class="label">Ortskarte</p><p>Tippe auf ein Feld, um seine Details zu sehen.</p>';return}
  const [name,icon,price]=fields[i],l=game?.lots[i];
  const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:'Ziehe eine Dorfkarte.',6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',12:'Hier passiert nichts. Zeit für eine Pause.',15:'Zahle CHF 100 an die Bank.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:'Ziehe eine Dorfkarte.'};
- $('field').innerHTML='<p class="label">Ortskarte · Feld '+(i+1)+'</p><h3>'+name+'</h3><p>'+(price?(l?'Besitz: '+esc(game.people[l.owner].name)+' · '+l.houses+' Häuser':'Kaufpreis '+cash(price))+' · Miete '+cash(l?rent(i):Math.round(price*.2)):notes[i])+'</p>';
+ $('field').innerHTML='<p class="label">Ortskarte · Feld '+(i+1)+'</p><h3>'+name+'</h3><p>'+(price?(l?'Besitz: '+esc(game.people[l.owner].name)+' · '+l.houses+' Häuser':'Kaufpreis '+cash(price))+' · Miete '+cash(l?rent(i):Math.round(price*.2)):notes[i])+'</p>'+(websites[i]?'<a href="'+websites[i]+'" target="_blank" rel="noopener noreferrer">Website öffnen ↗</a>':'');
 }
 function setup(){
  $('panel').innerHTML='<p class="label">Spielstart</p><h2>Wer spielt mit?</h2><form id="setup"><label>Anzahl Personen<select id="count"><option>2</option><option>3</option><option>4</option></select></label><div id="names"></div><label>Runden<select id="limit"><option>10</option><option selected>15</option><option>25</option></select></label><button class="action">Partie starten</button></form>';
