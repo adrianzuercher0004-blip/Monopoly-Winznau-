@@ -1,0 +1,140 @@
+<!doctype html><html lang="de-CH"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Winznau-Monopoly</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f4f0e4;color:#193b34;font:15px system-ui}header,main,footer{max-width:1160px;margin:auto;padding:18px}header{display:flex;justify-content:space-between;align-items:center;font-weight:900;letter-spacing:.13em}main{display:grid;grid-template-columns:minmax(0,1fr) 315px;gap:22px}.board{display:grid;grid-template:repeat(7,1fr)/repeat(7,1fr);aspect-ratio:1;background:#21463a;padding:5px;gap:3px;border-radius:16px;overflow:hidden}.tile{position:relative;background:#fff9e9;color:#193b34;border:0;border-top:5px solid var(--c);border-radius:4px;padding:2px;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:clamp(7px,1.25vw,13px);overflow-wrap:anywhere;line-height:1.08;cursor:pointer}.tile small{font-size:.88em;margin-top:3px}.tile svg{width:clamp(13px,3vw,31px);height:auto;color:var(--c);margin-bottom:3px}.tile.active{box-shadow:inset 0 0 0 2px #173b33;background:#ffebad}.tokens{display:flex;gap:2px;min-height:8px;margin-top:2px}.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--p);border:1px solid white;box-shadow:0 0 0 1px #193b34}.center{grid-area:2/2/7/7;display:grid;place-items:center;text-align:center;color:#fff7dc;background:#255448;border-radius:6px;position:relative;overflow:hidden}.center>svg{position:absolute;width:100%;height:100%}.brand{position:relative;padding:10px}.brand h1{font:900 clamp(24px,6vw,76px)/.85 Georgia;margin:12px 0;letter-spacing:-.06em}.brand span{font-size:clamp(8px,1.5vw,13px);letter-spacing:.2em;font-weight:800}.brand p{font-size:clamp(8px,1.5vw,14px)}aside{display:flex;flex-direction:column;gap:12px}.card,details{background:#fffaf0;border:1px solid #ded8c8;border-radius:13px;padding:15px}h2,h3,p{margin:0 0 10px}h2{font-family:Georgia;font-size:27px}.label{color:#4e675d;font-size:11px;font-weight:800;letter-spacing:.13em;text-transform:uppercase}.controls{display:flex;gap:7px;flex-wrap:wrap}button,input,select{font:inherit}button.action{border:0;border-radius:8px;padding:10px 13px;background:#214b3f;color:white;font-weight:750;cursor:pointer}button.alt{background:#e8e4d7;color:#193b34}button:disabled{opacity:.48;cursor:default}button:focus-visible,summary:focus-visible{outline:3px solid #b46429;outline-offset:2px}input,select{width:100%;padding:7px;margin-bottom:6px;border:1px solid #b6b5a6;border-radius:6px;background:white}.player{padding:8px 0;border-bottom:1px solid #e8e1d1;display:flex;justify-content:space-between;gap:8px}.player small{display:block;color:#4e675d}.dice{font-size:34px;line-height:1;margin-bottom:10px}.log{padding-left:19px;margin-bottom:0;font-size:13px}.log li{margin-bottom:4px}summary{cursor:pointer;font-weight:800}details p{margin-top:8px}footer{font-size:12px}a{color:inherit}@media(max-width:800px){main{grid-template-columns:1fr;gap:12px;padding:8px}header{padding:12px}.tile{border-top-width:3px}.board{gap:2px;padding:3px}.dot{width:6px;height:6px}}
+</style>
+<header><div>◆ WINZNAU · SO</div><div>4652</div></header>
+<main><section class="board" id="board" aria-label="Spielfeld"><div class="center"><svg viewBox="0 0 400 400" preserveAspectRatio="none" aria-hidden="true"><circle cx="315" cy="83" r="39" fill="#d1a956"/><path fill="#35695b" d="M0 212L90 100l52 56 89-69 169 127v186H0Z"/><path fill="#3e7867" d="M0 276l110-87 65 55 117-73 108 57v172H0Z"/><path fill="#79aaa0" d="M0 343q95-59 205-19t195-4v80H0Z"/><path fill="none" stroke="#b1cec1" stroke-width="3" d="M0 366q95-59 205-19t195-4"/></svg><div class="brand"><span>DIE DORF-EDITION</span><h1>Winznau<br>Monopoly</h1><p>Zwischen Jura und Aare</p></div></div></section>
+<aside><section class="card" id="panel"></section><section class="card" id="players" hidden></section><section class="card" id="field"><p class="label">Ortskarte</p><p>Tippe auf ein Feld, um seine Details zu sehen.</p></section><details><summary>Spielregeln</summary><p>2–4 Personen spielen abwechselnd. Alle starten mit CHF 1’500. Über LOS gibt es CHF 200. Freie Grundstücke kannst du kaufen, auf fremden zahlst du Miete.</p><p>Besitzt du eine ganze Farbgruppe, kannst du auf deinem aktuellen Feld bis zu zwei Häuser bauen. Jedes Haus erhöht die Miete um die doppelte Grundmiete. Im Arrest setzt du einen Zug aus.</p><p>Wer eine Zahlung nicht leisten kann, scheidet aus. Besitz und Restgeld gehen an den Gläubiger oder zurück an die Bank. Es gewinnt, wer übrig bleibt oder nach der gewählten Rundenzahl das höchste Vermögen hat. Grundstücke und Häuser zählen zum Kaufpreis. Bei Gleichstand teilen sich die Besten den Sieg.</p></details><section class="card" id="history" hidden></section></aside></main>
+<footer>Inspiriert vom <a href="https://www.winznau.ch/_docn/2510536/Ortsplan2016.pdf">Winznauer Ortsplan</a> und vom <a href="https://oltentourismus.ch/de/entdecken_erleben/natur/themenwege/kulturweg-winznau">Kulturweg</a>. Preise und Ereignisse sind Spielwerte.</footer>
+<script>
+const icons={
+ flag:'M5 21V3m0 1c6-5 9 5 15 0v10c-6 5-9-5-15 0',
+ road:'M7 22 10 2m7 20L14 2m-2 19v-3m0-3v-3m0-3V6',
+ house:'M2 11 12 3l10 8M5 10v11h14V10m-9 11v-6h4v6',
+ leaf:'M4 20C0 8 12 3 21 3c0 11-5 19-15 15m-3 3L15 9',
+ wave:'M2 8q3-4 6 0t6 0 6 0m-18 5q3-4 6 0t6 0 6 0m-18 5q3-4 6 0t6 0 6 0',
+ bridge:'M2 10h20M3 10v10m18-10v10M3 19q9-15 18 0M7 7V4m10 3V4',
+ church:'M3 21h18v-8l-6-3V7l-3-4-3 4v3l-6 3zm9-18V1m-2 2h4m-4 18v-5h4v5',
+ cards:'M5 3h12v16H5zm4 19h12V7m-13 4 3-4 3 4-3 4z',
+ coin:'M21 12a9 9 0 1 1-18 0 9 9 0 1 1 18 0zM14 8h-4v8m0-4h3',
+ bars:'M4 3h16v18H4zm5 0v18m6-18v18M4 8h16',
+ bench:'M3 5h18v6H3zm0 10h18M6 11v9m12-9v9',
+ hill:'M2 20 9 6l5 8 3-5 5 11zm7-14 2-3',
+ ball:'M21 12a9 9 0 1 1-18 0 9 9 0 1 1 18 0zM12 8l4 3-2 5h-4l-2-5zm0-5v5m9 2-5 1m1 8-3-3m-7 3 3-3m-7-6 5 1',
+ arrow:'M4 12h15m-6-6 6 6-6 6'
+};
+const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';
+const fields=[
+ ['LOS','flag'],['Bachmätteliweg','road',80,0],['Dorfpost','cards'],['Brunnackerstrasse','road',100,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
+ ['Rankwog-Brücke','bridge',180,2],['Kulturweg','leaf',200,2],['Ereignis','cards'],['Chäslochhöhle','hill',220,3],['Weihermätteli','leaf',240,3],['Freie Pause','bench'],
+ ['Sportweg','road',260,4],['Fussballplatz','ball',280,4],['Gemeindeabgabe','coin'],['Kirchweg','church',300,5],['Altes Schulhaus','house',320,5],['Ab in den Arrest','arrow'],
+ ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Dorfpost','cards'],['Oltnerstrasse','road',380,7],['Dorfzentrum Chärne','house',400,7]
+];
+const palette=['#9a5742','#288179','#336ab4','#6b52a0','#ad521f','#ae3e63','#527727','#886716'];
+const colors=['#007e93','#c33f53','#956b00','#784ec6'];
+const $=id=>document.getElementById(id);
+const cash=n=>'CHF '+n.toLocaleString('de-CH');
+const key='winznau-monopoly-v1';
+const dice=['⚀','⚁','⚂','⚃','⚄','⚅'];
+const cards=[['Du hilfst am Dorfmarkt. Die Bank zahlt dir CHF 100.',100],['Du spendierst deinem Verein neue Bälle. Zahle CHF 65.',-65],['Dein Stand am Dorffest bringt CHF 75 ein.',75],['Du beteiligst dich am Unterhalt des Kulturwegs. Zahle CHF 50.',-50],['Dein Team gewinnt das Dorfturnier. Du erhältst CHF 120.',120],['Die Bank erstattet dir CHF 40 für den Vereinsanlass.',40]];
+let game=null;
+try{game=JSON.parse(localStorage.getItem(key))}catch{}
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const current=()=>game.people[game.turn];
+const rent=i=>Math.round(fields[i][2]*.2)*(1+2*game.lots[i].houses);
+const house=i=>Math.floor(fields[i][2]/2);
+const rollDie=()=>1+Math.floor(Math.random()*6);
+const log=s=>game.log.unshift(s);
+const wealth=p=>p.money+game.lots.reduce((sum,l,i)=>sum+(l?.owner===p.id?fields[i][2]+l.houses*house(i):0),0);
+let selected=null;
+const dot=p=>'<span class="dot" aria-hidden="true" style="--p:'+colors[p.id]+'"></span>';
+function position(i){if(i<=6)return[7,7-i];if(i<=12)return[13-i,1];if(i<=18)return[1,i-11];return[i-17,7]}
+function draw(){
+ document.querySelectorAll('.tile').forEach(e=>e.remove());
+ fields.forEach(([name,icon,price,group],i)=>{
+  const [row,col]=position(i),b=document.createElement('button'),lot=game?.lots[i];
+  b.type='button';b.className='tile'+(game&&current().pos===i?' active':'');
+  b.style.cssText='grid-area:'+row+'/'+col+';--c:'+(price?palette[group]:'#3a6354');
+  b.innerHTML=svg(icon)+'<strong>'+name+'</strong><small>'+(price?(lot?'◆ '+esc(game.people[lot.owner].name)+(lot.houses?' · '+lot.houses+'⌂':''):cash(price)):i===0?'+200':i===15?'−100':'')+'</small><span class="tokens">'+(game?.people.filter(p=>!p.out&&p.pos===i).map(dot).join('')??'')+'</span>';
+  b.onclick=()=>{selected=i;detail()};$('board').append(b);
+ });
+ detail();$('players').hidden=$('history').hidden=!game;
+ if(!game){setup();return}
+ try{localStorage.setItem(key,JSON.stringify(game))}catch{}
+ const p=current(),i=p.pos,price=fields[i][2],lot=game.lots[i];
+ const live=game.people.filter(p=>!p.out);
+ const leaders=live.filter(p=>wealth(p)===Math.max(...live.map(wealth)));
+ let buttons=game.phase==='roll'?'<button class="action" id="roll">'+(p.jail?'Zug aussetzen':'Würfeln')+'</button>':'';
+ if(game.phase==='buy')buttons+='<button class="action" id="buy" '+(p.money<price?'disabled':'')+'>Kaufen · '+cash(price)+'</button>';
+ if(['buy','end'].includes(game.phase))buttons+=(canBuild(i)?'<button class="action" id="build">Haus bauen · '+cash(house(i))+'</button>':'')+'<button class="action alt" id="next">Zug beenden</button>';
+ if(game.phase==='win')buttons='<button class="action" id="reset">Neue Partie</button>';
+ $('panel').innerHTML='<p class="label">'+(game.phase==='win'?'Endstand':'Runde '+game.round+' / '+game.limit)+'</p><h2>'+ (game.phase==='win'?leaders.map(p=>esc(p.name)).join(' &amp; ')+(leaders.length>1?' gewinnen!':' gewinnt!'):dot(p)+' '+esc(p.name)+' ist am Zug')+'</h2><div class="dice" aria-label="'+(game.dice?.join(' und ')??'Würfel')+'">'+(game.dice?.map(n=>dice[n-1]).join(' ')??'⚄ ⚂')+'</div><p aria-live="polite">'+esc(game.message)+'</p><div class="controls">'+buttons+'</div>'+(game.phase==='win'?'':'<p style="margin:10px 0 0"><button class="action alt" id="reset">Neu starten</button></p>');
+ $('players').innerHTML='<p class="label">Spielende</p>'+game.people.map(p=>'<div class="player"><div>'+dot(p)+' <strong>'+esc(p.name)+'</strong><small>'+(p.out?'Ausgeschieden':game.lots.filter(l=>l?.owner===p.id).length+' Grundstücke · '+esc(fields[p.pos][0]))+'</small></div><b>'+cash(game.phase==='win'?wealth(p):p.money)+'</b></div>').join('');
+ $('history').innerHTML='<p class="label">Spielverlauf</p><ol class="log">'+game.log.slice(0,6).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>';
+ for(const [id,fn] of Object.entries({roll,buy,build,next,reset}))if($(id))$(id).onclick=fn;
+}
+function detail(){
+ const i=selected??game?.people[game.turn].pos;
+ if(i==null){$('field').innerHTML='<p class="label">Ortskarte</p><p>Tippe auf ein Feld, um seine Details zu sehen.</p>';return}
+ const [name,icon,price]=fields[i],l=game?.lots[i];
+ const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:'Ziehe eine Dorfkarte.',6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',12:'Hier passiert nichts. Zeit für eine Pause.',15:'Zahle CHF 100 an die Bank.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:'Ziehe eine Dorfkarte.'};
+ $('field').innerHTML='<p class="label">Ortskarte · Feld '+(i+1)+'</p><h3>'+name+'</h3><p>'+(price?(l?'Besitz: '+esc(game.people[l.owner].name)+' · '+l.houses+' Häuser':'Kaufpreis '+cash(price))+' · Miete '+cash(l?rent(i):Math.round(price*.2)):notes[i])+'</p>';
+}
+function setup(){
+ $('panel').innerHTML='<p class="label">Spielstart</p><h2>Wer spielt mit?</h2><form id="setup"><label>Anzahl Personen<select id="count"><option>2</option><option>3</option><option>4</option></select></label><div id="names"></div><label>Runden<select id="limit"><option>10</option><option selected>15</option><option>25</option></select></label><button class="action">Partie starten</button></form>';
+ const names=()=>{$('names').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>Person '+(i+1)+'<input id="name'+i+'" maxlength="18" placeholder="Person '+(i+1)+'"></label>').join('')};
+ names();$('count').onchange=names;
+ $('setup').onsubmit=e=>{e.preventDefault();game={people:Array.from({length:+$('count').value},(_,id)=>({id,name:$('name'+id).value.trim()||'Person '+(id+1),money:1500,pos:0,jail:false,out:false})),lots:Array(24).fill(null),turn:0,round:1,limit:+$('limit').value,phase:'roll',log:['Die Partie beginnt.'],message:'Würfle, um loszulegen.'};selected=null;draw()};
+}
+function charge(amount,owner){
+ const p=current(),paid=Math.min(p.money,amount);p.money-=paid;
+ if(owner!=null)game.people[owner].money+=paid;
+ if(paid===amount)return '';
+ p.out=true;
+ game.lots.forEach((l,i)=>{if(l?.owner===p.id)game.lots[i]=owner==null?null:{...l,owner}});
+ if(game.people.filter(p=>!p.out).length===1)game.phase='win';
+ return ' '+p.name+' scheidet aus.';
+}
+function roll(){
+ const p=current();
+ game.phase='end';
+ if(p.jail){p.jail=false;game.message=p.name+' setzt im Arrest aus.'}
+ else{
+  game.dice=[rollDie(),rollDie()];
+  const target=p.pos+game.dice[0]+game.dice[1],bonus=target>=24;
+  p.pos=target%24;
+  if(bonus)p.money+=200;
+  const i=p.pos,[name,,price]=fields[i],l=game.lots[i];
+  game.message=p.name+' landet auf '+name+'.'+(bonus?' Über LOS: +CHF 200.':'');
+  if(price&&!l){game.phase='buy';game.message+=' Das Grundstück ist frei.'}
+  if(l&&l.owner!==p.id)game.message+=' Miete '+cash(rent(i))+' an '+game.people[l.owner].name+'.'+charge(rent(i),l.owner);
+  if([2,9,21].includes(i)){const [msg,n]=cards[Math.floor(Math.random()*cards.length)];game.message+=' '+msg;if(n>0)p.money+=n;else game.message+=charge(-n)}
+  if(i===15)game.message+=' Abgabe CHF 100.'+charge(100);
+  if(i===18){p.pos=6;p.jail=true;game.message+=' Der nächste Zug fällt aus.'}
+ }
+ selected=null;log(game.message);draw();
+}
+function buy(){
+ const p=current(),i=p.pos,price=fields[i][2];
+ if(game.phase!=='buy'||game.lots[i]||p.money<price)return;
+ p.money-=price;game.lots[i]={owner:p.id,houses:0};game.phase='end';
+ game.message=p.name+' kauft '+fields[i][0]+' für '+cash(price)+'.';log(game.message);draw();
+}
+function canBuild(i){
+ const p=current(),l=game.lots[i];
+ return !p.out&&l?.owner===p.id&&l.houses<2&&p.money>=house(i)&&fields.every((f,j)=>f[3]!==fields[i][3]||game.lots[j]?.owner===p.id);
+}
+function build(){
+ const p=current(),i=p.pos;if(!canBuild(i)||game.phase!=='end')return;
+ p.money-=house(i);game.lots[i].houses++;game.message=p.name+' baut ein Haus auf '+fields[i][0]+'.';log(game.message);draw();
+}
+function next(){
+ const n=game.people.length;let t=game.turn;
+ do{t=(t+1)%n;if(t===0)game.round++}while(game.people[t].out);
+ if(game.round>game.limit){game.phase='win';game.message='Die letzte Runde ist beendet.'}
+ else{game.turn=t;game.phase='roll';game.message='Du bist am Zug.'}
+ game.dice=null;selected=null;draw();
+}
+function reset(){if(game.phase!=='win'&&!confirm('Laufende Partie beenden und neu starten?'))return;game=null;selected=null;try{localStorage.removeItem(key)}catch{}draw()}
+draw();
+</script></html>
