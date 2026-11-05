@@ -40,12 +40,13 @@ const icons={
 };
 const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';
 const fields=[
- ['LOS','flag'],['Bachmätteliweg','road',80,0],['LANDI','landi'],['gubler.ch','web',420,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
+ ['LOS','flag'],['Bachmätteliweg','road',80,0],['LANDI','landi'],['Dorfzentrum Chärne','house',100,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
  ['Rankwog-Brücke','bridge',180,2],['Kulturweg','leaf',200,2],['Ereignis','cards'],['Chäslochhöhle','hill',220,3],['Weihermätteli','leaf',240,3],['Bürgergemeinde','wave'],
  ['Sportweg','road',260,4],['Fussballplatz','ball',280,4],['Einwohnergemeinde','coin'],['Kirchweg','church',300,5],['Altes Schulhaus','house',320,5],['Ab in den Arrest','arrow'],
- ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Waldenergie','forest'],['Raiffeisenbank','bank',460,7],['Dorfzentrum Chärne','house',400,7]
+ ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Waldenergie','forest'],['gubler.ch','web',420,7],['Raiffeisenbank','bank',460,7]
 ];
-const websites={3:'https://gubler.ch/',22:'https://www.raiffeisen.ch/mittelgoesgen-staffelegg/de/ueber-uns/ihre-bank-vor-ort.html'};
+const websites={22:'https://gubler.ch/',23:'https://www.raiffeisen.ch/mittelgoesgen-staffelegg/de/ueber-uns/ihre-bank-vor-ort.html'};
+const localActions={2:['Du kaufst Material für den Garten bei LANDI. Zahle CHF 40.',-40],21:['Du lieferst Holz für die Waldenergie. Du erhältst CHF 70.',70]};
 const fees={12:{name:'Wassergebühr',amount:60},15:{name:'Nachsteuern',amount:100}};
 const palette=['#9a5742','#288179','#336ab4','#6b52a0','#ad521f','#ae3e63','#527727','#886716'];
 const colors=['#007e93','#c33f53','#956b00','#784ec6'];
@@ -55,7 +56,7 @@ const key='winznau-monopoly-v1';
 const dice=['⚀','⚁','⚂','⚃','⚄','⚅'];
 const cards=[['Du hilfst am Dorfmarkt. Die Bank zahlt dir CHF 100.',100],['Du spendierst deinem Verein neue Bälle. Zahle CHF 65.',-65],['Dein Stand am Dorffest bringt CHF 75 ein.',75],['Du beteiligst dich am Unterhalt des Kulturwegs. Zahle CHF 50.',-50],['Dein Team gewinnt das Dorfturnier. Du erhältst CHF 120.',120],['Die Bank erstattet dir CHF 40 für den Vereinsanlass.',40]];
 let game=null;
-try{game=JSON.parse(localStorage.getItem(key))}catch{}
+try{game=JSON.parse(localStorage.getItem(key));if(game&&!game.reorderedProperties){const [gubler,bank,chaerne]=[game.lots[3],game.lots[22],game.lots[23]];game.lots[3]=chaerne;game.lots[22]=gubler;game.lots[23]=bank;const moved={3:22,22:23,23:3};for(const p of game.people)p.pos=moved[p.pos]??p.pos;game.reorderedProperties=true}}catch{}
 const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const current=()=>game.people[game.turn];
 const rent=i=>Math.round(fields[i][2]*.2)*(1+2*game.lots[i].houses);
@@ -94,14 +95,14 @@ function detail(){
  const i=selected??game?.people[game.turn].pos;
  if(i==null){$('field').innerHTML='<p class="label">Ortskarte</p><p>Tippe auf ein Feld, um seine Details zu sehen.</p>';return}
  const [name,icon,price]=fields[i],l=game?.lots[i];
- const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:'Ziehe eine LANDI-Ereigniskarte.',6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:'Ziehe eine Waldenergie-Ereigniskarte.'};
+ const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:localActions[2][0],6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:localActions[21][0]};
  $('field').innerHTML='<p class="label">Ortskarte · Feld '+(i+1)+'</p><h3>'+name+'</h3><p>'+(price?(l?'Besitz: '+esc(game.people[l.owner].name)+' · '+l.houses+' Häuser':'Kaufpreis '+cash(price))+' · Miete '+cash(l?rent(i):Math.round(price*.2)):fees[i]?fees[i].name+' · Zahle '+cash(fees[i].amount)+'.':notes[i])+'</p>'+(websites[i]?'<a href="'+websites[i]+'" target="_blank" rel="noopener noreferrer">Website öffnen ↗</a>':'');
 }
 function setup(){
  $('panel').innerHTML='<p class="label">Spielstart</p><h2>Wer spielt mit?</h2><form id="setup"><label>Anzahl Personen<select id="count"><option>2</option><option>3</option><option>4</option></select></label><div id="names"></div><label>Runden<select id="limit"><option>10</option><option selected>15</option><option>25</option></select></label><button class="action">Partie starten</button></form>';
  const names=()=>{$('names').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>Person '+(i+1)+'<input id="name'+i+'" maxlength="18" placeholder="Person '+(i+1)+'"></label>').join('')};
  names();$('count').onchange=names;
- $('setup').onsubmit=e=>{e.preventDefault();game={people:Array.from({length:+$('count').value},(_,id)=>({id,name:$('name'+id).value.trim()||'Person '+(id+1),money:1500,pos:0,jail:false,out:false})),lots:Array(24).fill(null),turn:0,round:1,limit:+$('limit').value,phase:'roll',log:['Die Partie beginnt.'],message:'Würfle, um loszulegen.'};selected=null;draw()};
+ $('setup').onsubmit=e=>{e.preventDefault();game={people:Array.from({length:+$('count').value},(_,id)=>({id,name:$('name'+id).value.trim()||'Person '+(id+1),money:1500,pos:0,jail:false,out:false})),lots:Array(24).fill(null),reorderedProperties:true,turn:0,round:1,limit:+$('limit').value,phase:'roll',log:['Die Partie beginnt.'],message:'Würfle, um loszulegen.'};selected=null;draw()};
 }
 function charge(amount,owner){
  const p=current(),paid=Math.min(p.money,amount);p.money-=paid;
@@ -125,7 +126,7 @@ function roll(){
   game.message=p.name+' landet auf '+name+'.'+(bonus?' Über LOS: +CHF 200.':'');
   if(price&&!l){game.phase='buy';game.message+=' Das Grundstück ist frei.'}
   if(l&&l.owner!==p.id)game.message+=' Miete '+cash(rent(i))+' an '+game.people[l.owner].name+'.'+charge(rent(i),l.owner);
-  if([2,9,21].includes(i)){const [msg,n]=cards[Math.floor(Math.random()*cards.length)];game.message+=' '+msg;if(n>0)p.money+=n;else game.message+=charge(-n)}
+  if([2,9,21].includes(i)){const [msg,n]=localActions[i]??cards[Math.floor(Math.random()*cards.length)];game.message+=' '+msg;if(n>0)p.money+=n;else game.message+=charge(-n)}
   if(fees[i])game.message+=' '+fees[i].name+' '+cash(fees[i].amount)+'.'+charge(fees[i].amount);
   if(i===18){p.pos=6;p.jail=true;game.message+=' Der nächste Zug fällt aus.'}
  }
