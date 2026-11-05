@@ -29,6 +29,7 @@ const icons={
  wave:'M2 8q3-4 6 0t6 0 6 0m-18 5q3-4 6 0t6 0 6 0m-18 5q3-4 6 0t6 0 6 0',
  bridge:'M2 10h20M3 10v10m18-10v10M3 19q9-15 18 0M7 7V4m10 3V4',
  church:'M3 21h18v-8l-6-3V7l-3-4-3 4v3l-6 3zm9-18V1m-2 2h4m-4 18v-5h4v5',
+ forest:'M3 15l5-9 5 9H3zm5 0v6m5-10 4-8 5 11h-7m2 0v7',
  landi:'M3 11l9-7 9 7M5 10v11h14V10M9 21v-7h6v7m-6-7 6 7m0-7-6 7',
  cards:'M5 3h12v16H5zm4 19h12V7m-13 4 3-4 3 4-3 4z',
  coin:'M21 12a9 9 0 1 1-18 0 9 9 0 1 1 18 0zM14 8h-4v8m0-4h3',
@@ -39,10 +40,10 @@ const icons={
 };
 const svg=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+icons[k]+'"/></svg>';
 const fields=[
- ['LOS','flag'],['Bachmätteliweg','road',80,0],['LANDI','landi'],['gubler.ch','web',100,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
+ ['LOS','flag'],['Bachmätteliweg','road',80,0],['LANDI','landi'],['gubler.ch','web',420,0],['Stauwehr','wave',140,1],['Aareweg','wave',160,1],['Arrest / Besuch','bars'],
  ['Rankwog-Brücke','bridge',180,2],['Kulturweg','leaf',200,2],['Ereignis','cards'],['Chäslochhöhle','hill',220,3],['Weihermätteli','leaf',240,3],['Bürgergemeinde','wave'],
  ['Sportweg','road',260,4],['Fussballplatz','ball',280,4],['Einwohnergemeinde','coin'],['Kirchweg','church',300,5],['Altes Schulhaus','house',320,5],['Ab in den Arrest','arrow'],
- ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['LANDI','landi'],['Raiffeisenbank','bank',380,7],['Dorfzentrum Chärne','house',400,7]
+ ['Oberdorfstrasse','road',340,6],['Lostorferstrasse','road',360,6],['Waldenergie','forest'],['Raiffeisenbank','bank',460,7],['Dorfzentrum Chärne','house',400,7]
 ];
 const websites={3:'https://gubler.ch/',22:'https://www.raiffeisen.ch/mittelgoesgen-staffelegg/de/ueber-uns/ihre-bank-vor-ort.html'};
 const fees={12:{name:'Wassergebühr',amount:60},15:{name:'Nachsteuern',amount:100}};
@@ -93,7 +94,7 @@ function detail(){
  const i=selected??game?.people[game.turn].pos;
  if(i==null){$('field').innerHTML='<p class="label">Ortskarte</p><p>Tippe auf ein Feld, um seine Details zu sehen.</p>';return}
  const [name,icon,price]=fields[i],l=game?.lots[i];
- const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:'Ziehe eine LANDI-Ereigniskarte.',6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:'Ziehe eine LANDI-Ereigniskarte.'};
+ const notes={0:'Beim Überqueren oder Landen erhältst du CHF 200.',2:'Ziehe eine LANDI-Ereigniskarte.',6:'Wer hier regulär landet, ist zu Besuch.',9:'Ziehe eine Ereigniskarte.',18:'Gehe direkt in den Arrest und setze einen Zug aus.',21:'Ziehe eine Waldenergie-Ereigniskarte.'};
  $('field').innerHTML='<p class="label">Ortskarte · Feld '+(i+1)+'</p><h3>'+name+'</h3><p>'+(price?(l?'Besitz: '+esc(game.people[l.owner].name)+' · '+l.houses+' Häuser':'Kaufpreis '+cash(price))+' · Miete '+cash(l?rent(i):Math.round(price*.2)):fees[i]?fees[i].name+' · Zahle '+cash(fees[i].amount)+'.':notes[i])+'</p>'+(websites[i]?'<a href="'+websites[i]+'" target="_blank" rel="noopener noreferrer">Website öffnen ↗</a>':'');
 }
 function setup(){
