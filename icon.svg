@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" role="img" aria-label="Winznau-Monopoly">
+<defs><clipPath id="badge"><rect x="8" y="8" width="176" height="176" rx="41"/></clipPath></defs>
+<g clip-path="url(#badge)">
+<path fill="#214b3f" d="M0 0h192v192H0z"/>
+<circle cx="137" cy="57" r="23" fill="#e5b95e"/>
+<path fill="#3e7867" d="M0 130 56 59l35 42 25-24 76 58v57H0z"/>
+<path fill="#8bbcb0" d="M0 146q43-23 92-7t100-5v58H0z"/>
+<path fill="none" stroke="#d1e3d7" stroke-width="4" d="M0 159q43-23 92-7t100-5"/>
+</g>
+<rect x="10" y="10" width="172" height="172" rx="39" fill="none" stroke="#e5b95e" stroke-width="4"/>
+<g transform="rotate(-12 96 108)">
+<rect x="65" y="80" width="62" height="62" rx="13" fill="#193b34" opacity=".35"/>
+<rect x="63" y="75" width="62" height="62" rx="13" fill="#fff5d9" stroke="#193b34" stroke-width="4"/>
+<g fill="#214b3f"><circle cx="80" cy="92" r="5"/><circle cx="108" cy="92" r="5"/><circle cx="94" cy="106" r="5"/><circle cx="80" cy="120" r="5"/><circle cx="108" cy="120" r="5"/></g>
+</g></svg>
