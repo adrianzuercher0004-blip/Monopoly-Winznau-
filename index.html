@@ -116,7 +116,7 @@ function draw(){
  if(game.phase==='buy')buttons+='<button class="action" id="buy" '+(p.money<price?'disabled':'')+'>Kaufen · '+cash(price)+'</button>';
  if(['buy','end'].includes(game.phase))buttons+=(canBuild(i)?'<button class="action" id="build">Haus bauen · '+cash(house(i))+'</button>':'')+'<button class="action alt" id="next">Zug beenden</button>';
  if(game.phase==='win')buttons='<button class="action" id="print">Urkunde drucken</button><button class="action alt" id="reset">Neue Partie</button>';
- $('panel').innerHTML='<p class="label">'+(game.phase==='win'?'Endstand':'Runde '+game.round+' / '+game.limit)+'</p><h2>'+ (game.phase==='win'?leaders.map(p=>esc(p.name)).join(' &amp; ')+(leaders.length>1?' gewinnen!':' gewinnt!'):dot(p)+' '+esc(p.name)+' ist am Zug')+'</h2><div class="dice" aria-label="'+(game.dice?.join(' und ')??'Würfel')+'">'+diceFaces(game.dice??[5,3])+'</div><p aria-live="polite">'+esc(game.message)+'</p><div class="controls">'+buttons+'</div>'+(game.phase==='win'?certificate(leaders):'<p style="margin:10px 0 0"><button class="action alt" id="reset">Neu starten</button></p>');
+ $('panel').innerHTML='<p class="label">'+(game.phase==='win'?'Endstand':'Runde '+game.round+' / '+game.limit)+'</p><h2>'+ (game.phase==='win'?leaders.map(p=>esc(p.name)).join(' &amp; ')+(leaders.length>1?' gewinnen!':' gewinnt!'):dot(p)+' '+esc(p.name)+' ist am Zug')+'</h2><div class="dice" aria-label="'+(game.dice?.join(' und ')??'Würfel')+'">'+diceFaces(game.dice??[5,3])+'</div><p aria-live="polite">'+esc(game.message)+'</p><div class="controls">'+buttons+'</div>'+(game.phase==='win'?certificate(leaders):'<p style="margin:10px 0 0"><button class="action alt" id="reset">Spiel abbrechen</button></p>');
  $('players').innerHTML='<p class="label">Spielende</p>'+game.people.map(p=>'<div class="player"><div>'+dot(p)+' <strong>'+esc(p.name)+'</strong><small>'+(p.out?'Ausgeschieden':game.lots.filter(l=>l?.owner===p.id).length+' Grundstücke · '+esc(fields[p.pos][0]))+'</small></div><b>'+cash(game.phase==='win'?wealth(p):p.money)+'</b></div>').join('');
  $('history').innerHTML='<p class="label">Spielverlauf</p><ol class="log">'+game.log.slice(0,6).map(s=>'<li>'+esc(s)+'</li>').join('')+'</ol>';
  for(const [id,fn] of Object.entries({roll:animateRoll,buy,build,next,reset,print:()=>window.print()}))if($(id))$(id).onclick=fn;
@@ -204,6 +204,6 @@ function next(){
  else{game.turn=t;game.phase='roll';game.message='Du bist am Zug.'}
  game.dice=null;selected=null;draw();
 }
-function reset(){if(game.phase!=='win'&&!confirm('Laufende Partie beenden und neu starten?'))return;game=null;selected=null;try{localStorage.removeItem(key)}catch{}draw()}
+function reset(){if(game.phase!=='win'&&!confirm('Diese Partie abbrechen? Der aktuelle Spielstand geht verloren.'))return;game=null;selected=null;try{localStorage.removeItem(key)}catch{}draw()}
 draw();
 </script></html>
